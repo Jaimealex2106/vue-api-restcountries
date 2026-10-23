@@ -7,43 +7,35 @@ const loading = ref(true)
 const error = ref(false)
 const busqueda = ref('')
 
-// Consumo de API
-// Consumo de API
+// Consumo de API directo y sin bloqueos
 const fetchCountries = async () => {
   try {
-    // 1. Usamos tu API KEY real de la versión 5.
-    // 2. Quitamos la búsqueda de "Canada" para que nos devuelva la lista completa.
-    const urlOriginal = 'https://api.restcountries.com/countries/v5?api-key=rc_live_9939d2126ac947e49e7cad8221efdcc8';
-    
-    // 3. Pasamos la petición por AllOrigins para evadir el bloqueo de CORS de GitHub Pages
-    const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(urlOriginal)}`);
+    // Usamos el endpoint público v3.1 (sin proxy y sin API Key). 
+    // El getTime() evita que el navegador recicle errores viejos de la caché.
+    const response = await fetch(`https://restcountries.com/v3.1/all?timestamp=${new Date().getTime()}`);
     
     if (!response.ok) throw new Error('Error en la red');
     
-    const wrapper = await response.json();
-    const jsonAPI = JSON.parse(wrapper.contents);
+    const data = await response.json();
     
-    // 4. La versión 5 devuelve la información dentro del atributo "data". Lo extraemos:
-    let listaPaises = jsonAPI.data || jsonAPI;
+    // Asignamos la lista completa de más de 250 países
+    countries.value = Array.isArray(data) ? data : [];
     
-    // 5. Aseguramos que sea un arreglo para que el v-for no se rompa
-    countries.value = Array.isArray(listaPaises) ? listaPaises : (listaPaises.name ? [listaPaises] : []);
-    
+    console.log("Países cargados exitosamente:", countries.value.length);
   } catch (err) {
     error.value = true;
-    console.error("Fallo al cargar la API v5:", err);
+    console.error("Fallo al cargar la API:", err);
   } finally {
     loading.value = false;
   }
 }
 
-// Filtro computado protegido e indestructible
+// Filtro computado protegido
 const paisesFiltrados = computed(() => {
   if (!Array.isArray(countries.value)) return [];
   
   return countries.value.filter(pais => {
-    // Extrae el nombre de forma segura sin importar qué versión de JSON descargaste
-    const nombrePais = pais.name?.common || pais.name || '';
+    const nombrePais = pais.name?.common || '';
     return nombrePais.toLowerCase().includes(busqueda.value.toLowerCase());
   });
 })
