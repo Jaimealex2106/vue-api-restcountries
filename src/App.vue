@@ -10,17 +10,14 @@ const busqueda = ref('')
 // Consumo de API
 const fetchCountries = async () => {
   try {
-    // allOrigins con la ruta /raw devuelve el JSON original saltándose cualquier bloqueo de CORS
-    const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://restcountries.com/v3.1/all'))
-    
-    if (!response.ok) throw new Error('Error en la red')
-    
-    countries.value = await response.json()
+    const response = await fetch('https://restcountries.com/v3.1/all');
+    if (!response.ok) throw new Error('Error en la red');
+    countries.value = await response.json();
   } catch (err) {
-    error.value = true
-    console.error(err)
+    error.value = true;
+    console.error(err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
