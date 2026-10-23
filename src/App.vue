@@ -10,10 +10,17 @@ const busqueda = ref('')
 // Consumo de API
 const fetchCountries = async () => {
   try {
-    // Usamos el endpoint '/all' para poder filtrar localmente
-    const response = await fetch('https://api.codetabs.com/v1/proxy?quest=https://restcountries.com/v3.1/all')
+    const response = await fetch('https://api.restcountries.com/countries/v5?q=Canada&pretty=1', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer rc_live_9939d2126ac947e49e7cad8221efdcc8'
+      }
+    })
     if (!response.ok) throw new Error('Error en la red')
-    countries.value = await response.json()
+    
+    const data = await response.json()
+    // Si la API devuelve un solo objeto (al buscar un país específico), lo envolvemos en un arreglo para que v-for no falle
+    countries.value = Array.isArray(data) ? data : [data]
   } catch (err) {
     error.value = true
     console.error(err)
