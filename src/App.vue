@@ -10,14 +10,12 @@ const busqueda = ref('')
 // Consumo de API
 const fetchCountries = async () => {
   try {
-    // La API key se pasa directamente en los parámetros de la URL (?q=Canada&api-key=...)
-    const response = await fetch('https://api.restcountries.com/countries/v5?q=Canada&api-key=rc_live_9939d2126ac947e49e7cad8221efdcc8&pretty=1')
+    // allOrigins con la ruta /raw devuelve el JSON original saltándose cualquier bloqueo de CORS
+    const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://restcountries.com/v3.1/all'))
     
     if (!response.ok) throw new Error('Error en la red')
     
-    const data = await response.json()
-    // Ajuste para asegurar que siempre sea un arreglo y v-for funcione
-    countries.value = Array.isArray(data) ? data : [data]
+    countries.value = await response.json()
   } catch (err) {
     error.value = true
     console.error(err)
