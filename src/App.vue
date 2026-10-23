@@ -7,7 +7,6 @@ const loading = ref(true)
 const error = ref(false)
 const busqueda = ref('')
 
-// Consumo de API
 // Consumo de API actualizado
 const fetchCountries = async () => {
   try {
@@ -39,13 +38,6 @@ const paisesFiltrados = computed(() => {
 // Llamada en onMounted
 onMounted(() => {
   fetchCountries()
-})
-
-// Filtro computado por nombre
-const paisesFiltrados = computed(() => {
-  return countries.value.filter(pais => 
-    pais.name.common.toLowerCase().includes(busqueda.value.toLowerCase())
-  )
 })
 </script>
 
