@@ -10,9 +10,12 @@ const busqueda = ref('')
 // Consumo de API
 const fetchCountries = async () => {
   try {
-    const response = await fetch('https://restcountries.com/v3.1/all');
+    const url = encodeURIComponent('https://restcountries.com/v3.1/all');
+    const response = await fetch(`https://api.allorigins.win/get?url=${url}`);
     if (!response.ok) throw new Error('Error en la red');
-    countries.value = await response.json();
+    
+    const wrapper = await response.json();
+    countries.value = JSON.parse(wrapper.contents); // Transforma el string de regreso a JSON
   } catch (err) {
     error.value = true;
     console.error(err);
