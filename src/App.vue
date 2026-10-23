@@ -11,7 +11,7 @@ const busqueda = ref('')
 const fetchCountries = async () => {
   try {
     // Usamos el endpoint '/all' para poder filtrar localmente
-    const response = await fetch('https://restcountries.com/v3.1/all')
+    const response = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://restcountries.com/v3.1/all'))
     if (!response.ok) throw new Error('Error en la red')
     countries.value = await response.json()
   } catch (err) {
