@@ -8,12 +8,16 @@ const error = ref(false)
 const busqueda = ref('')
 
 // Consumo de API
+// Consumo de API actualizado
 const fetchCountries = async () => {
   try {
-    const response = await fetch('/vue-api-restcountries/countries.json');
+    // Usar ruta relativa para que Vite resuelva automáticamente la URL base
+    const response = await fetch('./countries.json');
     if (!response.ok) throw new Error('Error en la red');
     
-    countries.value = await response.json();
+    const data = await response.json();
+    // Forzar que el valor siempre sea un arreglo, incluso si falla la estructura
+    countries.value = Array.isArray(data) ? data : [];
   } catch (err) {
     error.value = true;
     console.error(err);
@@ -21,6 +25,16 @@ const fetchCountries = async () => {
     loading.value = false;
   }
 }
+
+// Filtro computado protegido
+const paisesFiltrados = computed(() => {
+  // Retornar un arreglo vacío si countries.value aún no es iterable
+  if (!Array.isArray(countries.value)) return [];
+  
+  return countries.value.filter(pais => 
+    pais.name?.common?.toLowerCase().includes(busqueda.value.toLowerCase())
+  );
+})
 
 // Llamada en onMounted
 onMounted(() => {
