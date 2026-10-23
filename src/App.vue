@@ -8,22 +8,30 @@ const error = ref(false)
 const busqueda = ref('')
 
 // Consumo de API
+// Consumo de API
 const fetchCountries = async () => {
   try {
-    // Usamos tu URL pública exacta para evitar fallos de rutas
-    const response = await fetch('https://jaimealex2106.github.io/vue-api-restcountries/countries.json');
+    // 1. Usamos tu API KEY real de la versión 5.
+    // 2. Quitamos la búsqueda de "Canada" para que nos devuelva la lista completa.
+    const urlOriginal = 'https://api.restcountries.com/countries/v5?api-key=rc_live_9939d2126ac947e49e7cad8221efdcc8';
+    
+    // 3. Pasamos la petición por AllOrigins para evadir el bloqueo de CORS de GitHub Pages
+    const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(urlOriginal)}`);
+    
     if (!response.ok) throw new Error('Error en la red');
     
-    const data = await response.json();
+    const wrapper = await response.json();
+    const jsonAPI = JSON.parse(wrapper.contents);
     
-    // Protección: Si descargaste un solo país (objeto) en lugar de la lista, lo fuerza a ser un arreglo.
-    countries.value = Array.isArray(data) ? data : (data.name ? [data] : []);
+    // 4. La versión 5 devuelve la información dentro del atributo "data". Lo extraemos:
+    let listaPaises = jsonAPI.data || jsonAPI;
     
-    // Imprime en consola para que verifiques qué datos tiene tu archivo
-    console.log("Datos extraídos del JSON:", countries.value);
+    // 5. Aseguramos que sea un arreglo para que el v-for no se rompa
+    countries.value = Array.isArray(listaPaises) ? listaPaises : (listaPaises.name ? [listaPaises] : []);
+    
   } catch (err) {
     error.value = true;
-    console.error("Fallo al cargar:", err);
+    console.error("Fallo al cargar la API v5:", err);
   } finally {
     loading.value = false;
   }
