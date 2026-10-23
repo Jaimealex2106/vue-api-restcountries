@@ -10,12 +10,10 @@ const busqueda = ref('')
 // Consumo de API
 const fetchCountries = async () => {
   try {
-    const url = encodeURIComponent('https://restcountries.com/v3.1/all');
-    const response = await fetch(`https://api.allorigins.win/get?url=${url}`);
+    const response = await fetch('/vue-api-restcountries/countries.json');
     if (!response.ok) throw new Error('Error en la red');
     
-    const wrapper = await response.json();
-    countries.value = JSON.parse(wrapper.contents); // Transforma el string de regreso a JSON
+    countries.value = await response.json();
   } catch (err) {
     error.value = true;
     console.error(err);
