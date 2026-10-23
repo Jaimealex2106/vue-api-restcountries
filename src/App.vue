@@ -1,46 +1,31 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-// Variables reactivas
 const countries = ref([])
 const loading = ref(true)
 const error = ref(false)
 const busqueda = ref('')
 
-// Consumo de API directo y sin bloqueos
 const fetchCountries = async () => {
   try {
-    // Usamos el endpoint público v3.1 (sin proxy y sin API Key). 
-    // El getTime() evita que el navegador recicle errores viejos de la caché.
-    const response = await fetch(`https://restcountries.com/v3.1/all?timestamp=${new Date().getTime()}`);
-    
-    if (!response.ok) throw new Error('Error en la red');
-    
-    const data = await response.json();
-    
-    // Asignamos la lista completa de más de 250 países
-    countries.value = Array.isArray(data) ? data : [];
-    
-    console.log("Países cargados exitosamente:", countries.value.length);
+    const response = await fetch('https://api.sampleapis.com/countries/countries')
+    if (!response.ok) throw new Error('Error en la red')
+    countries.value = await response.json()
   } catch (err) {
-    error.value = true;
-    console.error("Fallo al cargar la API:", err);
+    error.value = true
+    console.error(err)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
-// Filtro computado protegido
 const paisesFiltrados = computed(() => {
-  if (!Array.isArray(countries.value)) return [];
-  
-  return countries.value.filter(pais => {
-    const nombrePais = pais.name?.common || '';
-    return nombrePais.toLowerCase().includes(busqueda.value.toLowerCase());
-  });
+  if (!Array.isArray(countries.value)) return []
+  return countries.value.filter(pais => 
+    pais.name.toLowerCase().includes(busqueda.value.toLowerCase())
+  )
 })
 
-// Llamada en onMounted
 onMounted(() => {
   fetchCountries()
 })
@@ -49,40 +34,28 @@ onMounted(() => {
 <template>
   <main class="container">
     <h1>Explorador de Países</h1>
-
-    <!-- v-model para búsqueda -->
     <div class="search-box">
-      <input 
-        type="text" 
-        v-model="busqueda" 
-        placeholder="Buscar país por nombre..." 
-      />
+      <input type="text" v-model="busqueda" placeholder="Buscar país por nombre..." />
     </div>
 
-    <!-- v-if: Indicador de carga -->
     <div v-if="loading" class="loading">
       <p>⏳ Cargando países...</p>
     </div>
-
-    <!-- v-if: Manejo de errores -->
     <div v-else-if="error" class="error">
       <p>❌ No fue posible obtener los datos de la API.</p>
     </div>
 
-    <!-- Contenedor principal -->
     <div v-else>
       <div v-if="paisesFiltrados.length === 0">
         <p>No se encontraron resultados para "{{ busqueda }}"</p>
       </div>
       
       <div class="grid">
-        <!-- v-for: Lista de países -->
-        <div v-for="pais in paisesFiltrados" :key="pais.cca3" class="card">
-          <!-- v-bind (:src y :alt) -->
-          <img :src="pais.flags.svg" :alt="'Bandera de ' + pais.name.common" class="flag" />
-          <h2>{{ pais.name.common }}</h2>
-          <p><strong>Capital:</strong> {{ pais.capital ? pais.capital[0] : 'N/A' }}</p>
-          <p><strong>Región:</strong> {{ pais.region }}</p>
+        <div v-for="pais in paisesFiltrados" :key="pais.name" class="card">
+          <img :src="pais.media.flag" :alt="'Bandera de ' + pais.name" class="flag" />
+          <h2>{{ pais.name }}</h2>
+          <p><strong>Capital:</strong> {{ pais.capital }}</p>
+          <p><strong>Moneda:</strong> {{ pais.currency }}</p>
           <p><strong>Población:</strong> {{ pais.population.toLocaleString() }}</p>
         </div>
       </div>
