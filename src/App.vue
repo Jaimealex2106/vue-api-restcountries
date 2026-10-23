@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
+// Variables reactivas
 const countries = ref([])
 const loading = ref(true)
 const error = ref(false)
 const busqueda = ref('')
 
+// Consumo de API (SampleAPIs)
 const fetchCountries = async () => {
   try {
     const response = await fetch('https://api.sampleapis.com/countries/countries')
@@ -19,6 +21,7 @@ const fetchCountries = async () => {
   }
 }
 
+// Filtro computado protegido
 const paisesFiltrados = computed(() => {
   if (!Array.isArray(countries.value)) return []
   return countries.value.filter(pais => 
@@ -26,6 +29,7 @@ const paisesFiltrados = computed(() => {
   )
 })
 
+// Llamada en onMounted
 onMounted(() => {
   fetchCountries()
 })
@@ -34,29 +38,38 @@ onMounted(() => {
 <template>
   <main class="container">
     <h1>Explorador de Países</h1>
+    
+    <!-- v-model para búsqueda -->
     <div class="search-box">
       <input type="text" v-model="busqueda" placeholder="Buscar país por nombre..." />
     </div>
 
+    <!-- v-if: Indicador de carga -->
     <div v-if="loading" class="loading">
       <p>⏳ Cargando países...</p>
     </div>
+    
+    <!-- v-if: Manejo de errores -->
     <div v-else-if="error" class="error">
       <p>❌ No fue posible obtener los datos de la API.</p>
     </div>
 
+    <!-- Contenedor principal -->
     <div v-else>
       <div v-if="paisesFiltrados.length === 0">
         <p>No se encontraron resultados para "{{ busqueda }}"</p>
       </div>
       
       <div class="grid">
+        <!-- v-for: Lista de países -->
         <div v-for="pais in paisesFiltrados" :key="pais.name" class="card">
-          <img :src="pais.media.flag" :alt="'Bandera de ' + pais.name" class="flag" />
+          <!-- Uso de ?. para evitar errores si falta la bandera -->
+          <img :src="pais.media?.flag" :alt="'Bandera de ' + pais.name" class="flag" />
           <h2>{{ pais.name }}</h2>
           <p><strong>Capital:</strong> {{ pais.capital }}</p>
           <p><strong>Moneda:</strong> {{ pais.currency }}</p>
-          <p><strong>Población:</strong> {{ pais.population.toLocaleString() }}</p>
+          <!-- Validación con operador ternario para la población -->
+          <p><strong>Población:</strong> {{ pais.population ? pais.population.toLocaleString() : 'N/A' }}</p>
         </div>
       </div>
     </div>
