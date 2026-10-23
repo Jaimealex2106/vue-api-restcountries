@@ -7,32 +7,37 @@ const loading = ref(true)
 const error = ref(false)
 const busqueda = ref('')
 
-// Consumo de API actualizado
+// Consumo de API
 const fetchCountries = async () => {
   try {
-    // Usar ruta relativa para que Vite resuelva automáticamente la URL base
-    const response = await fetch('./countries.json');
+    // Usamos tu URL pública exacta para evitar fallos de rutas
+    const response = await fetch('https://jaimealex2106.github.io/vue-api-restcountries/countries.json');
     if (!response.ok) throw new Error('Error en la red');
     
     const data = await response.json();
-    // Forzar que el valor siempre sea un arreglo, incluso si falla la estructura
-    countries.value = Array.isArray(data) ? data : [];
+    
+    // Protección: Si descargaste un solo país (objeto) en lugar de la lista, lo fuerza a ser un arreglo.
+    countries.value = Array.isArray(data) ? data : (data.name ? [data] : []);
+    
+    // Imprime en consola para que verifiques qué datos tiene tu archivo
+    console.log("Datos extraídos del JSON:", countries.value);
   } catch (err) {
     error.value = true;
-    console.error(err);
+    console.error("Fallo al cargar:", err);
   } finally {
     loading.value = false;
   }
 }
 
-// Filtro computado protegido
+// Filtro computado protegido e indestructible
 const paisesFiltrados = computed(() => {
-  // Retornar un arreglo vacío si countries.value aún no es iterable
   if (!Array.isArray(countries.value)) return [];
   
-  return countries.value.filter(pais => 
-    pais.name?.common?.toLowerCase().includes(busqueda.value.toLowerCase())
-  );
+  return countries.value.filter(pais => {
+    // Extrae el nombre de forma segura sin importar qué versión de JSON descargaste
+    const nombrePais = pais.name?.common || pais.name || '';
+    return nombrePais.toLowerCase().includes(busqueda.value.toLowerCase());
+  });
 })
 
 // Llamada en onMounted
